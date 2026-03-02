@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Työaikaseuranta</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <div class="brand">Työaikaseuranta</div>
+        <div class="subtitle" id="subtitle">Offline-valmis • Sheets</div>
+      </div>
+      <div class="right">
+        <button class="btn btn-ghost" id="btnLogout">Ulos</button>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <section class="view" id="viewLogin" style="display:none">
+      <div class="card">
+        <div class="h1">Valitse käyttäjä</div>
+        <div class="muted">PIN kysytään kerran sovellukseen.</div>
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <button class="btn btn-blue btn-user" data-user="Juha">Juha</button>
+          <button class="btn btn-blue btn-user" data-user="Matti">Matti</button>
+          <button class="btn btn-blue btn-user" data-user="Janne">Janne</button>
+          <button class="btn btn-blue btn-user" data-user="Tommi">Tommi</button>
+        </div>
+
+        <div class="divider"></div>
+        <div id="foreignRunningBox" class="card" style="display:none">
+          <div class="h2">Käynnissä oleva työ löytyy</div>
+          <div class="muted">Käyttäjä: <span id="foreignRunningUser"></span></div>
+          <div class="divider"></div>
+          <button class="btn btn-red" id="btnClearForeignRunning">Poista käynnissä oleva työ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIN -->
+    <section class="view" id="viewPin" style="display:none">
+      <div class="card">
+        <div class="h1">PIN-koodi</div>
+        <div class="muted" id="pinNote">Syötä PIN jatkaaksesi.</div>
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="label">Käyttäjä</div>
+          <div class="right" id="pinUser"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <input id="pinInput" class="input" type="password" inputmode="numeric" autocomplete="one-time-code" />
+
+        <div class="divider"></div>
+        <div class="row">
+          <button class="btn btn-ghost" id="btnPinBack">Takaisin</button>
+          <button class="btn btn-green" id="btnPinOk">OK</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENU (pidetään olemassa, vaikka ohitetaan) -->
+    <section class="view" id="viewMenu" style="display:none">
+      <div class="card">
+        <div class="h1">Valikko</div>
+        <div class="menu">
+          <button class="btn btn-blue" id="btnGoWork">Työaika</button>
+          <button class="btn btn-ghost" id="btnGoSettings">Asetukset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORK -->
+    <section class="view" id="viewWork" style="display:none">
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="h1">Työaika</div>
+            <div class="muted" id="liveToday">–</div>
+          </div>
+          <div class="right">
+            <div class="label">Rekisteri</div>
+            <div class="row" style="gap:8px; justify-content:flex-end;">
+              <select id="plateSelect" class="select"></select>
+              <button class="btn btn-ghost" id="btnAddPlate">Lisää uusi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <button class="btn btn-green" id="btnStart">ALOITA</button>
+          <button class="btn btn-yellow" id="btnBreak">TAUKO</button>
+          <button class="btn btn-red" id="btnStop">LOPETA</button>
+          <button class="btn btn-blue" id="btnFuel">TANKKAUS</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="label">Kokonaistyö</div>
+            <div class="big" id="liveAll">0:00</div>
+          </div>
+          <div class="card">
+            <div class="label">Tauko</div>
+            <div class="big" id="liveBreak">0:00</div>
+          </div>
+          <div class="card">
+            <div class="label">Vähennys</div>
+            <div class="big" id="liveDeduct">0:00</div>
+          </div>
+          <div class="card">
+            <div class="label">Lähettämättä</div>
+            <div class="big"><span id="unsentCount">0</span></div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn btn-ghost" id="btnSyncUnsent">Lähetä</button>
+              <button class="btn btn-ghost" id="btnTestSheets">Testaa</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div>
+            <div class="h2">Päiväraha</div>
+            <div class="muted">Valitse tarvittaessa</div>
+          </div>
+          <div class="right">
+            <div class="row" style="gap:8px; justify-content:flex-end;">
+              <button class="btn btn-ghost" id="btnManualDay">Lisää päivä manuaalisesti</button>
+              <button class="btn btn-ghost" id="btnSwitchUser">Vaihda käyttäjä</button>
+              <button class="btn btn-ghost" id="btnGoSettings">Asetukset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="h1">Historia</div>
+        <div class="muted" id="historyHint">–</div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="viewSettings" style="display:none">
+      <div class="card">
+        <div class="h1">Asetukset</div>
+        <div class="muted" id="settingsNote">–</div>
+
+        <div class="divider"></div>
+
+        <div class="label">Sheets URL</div>
+        <input id="sheetsUrl" class="input" placeholder="https://script.google.com/macros/s/.../exec" />
+
+        <div class="divider"></div>
+
+        <div class="label">Tankkaus URL</div>
+        <input id="fuelUrl" class="input" />
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <button class="btn btn-ghost" id="btnBackMenu">Takaisin</button>
+          <button class="btn btn-green" id="btnSaveSettings">Tallenna</button>
+          <button class="btn btn-blue" id="btnGoFuel">Avaa tankkaus</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal" id="modalConfirm" style="display:none">
+      <div class="modal-card">
+        <div class="h1">Vahvistus</div>
+        <div class="muted" id="confText"></div>
+        <div class="divider"></div>
+        <div class="row">
+          <button class="btn btn-ghost" id="confCancel">Peruuta</button>
+          <button class="btn btn-green" id="confOk">OK</button>
+        </div>
+        <button class="modal-x" id="confClose" aria-label="Sulje">✕</button>
+      </div>
+    </div>
+
+    <!-- MANUAL DAY MODAL -->
+    <div class="modal" id="modalManual" style="display:none">
+      <div class="modal-card">
+        <div class="h1">Lisää päivä</div>
+
+        <div class="grid2">
+          <div>
+            <div class="label">Päivä</div>
+            <input id="manDate" class="input" type="date" />
+          </div>
+          <div>
+            <div class="label">Päiväraha</div>
+            <select id="manPerDiem" class="select">
+              <option value="0">Ei</option>
+              <option value="1">Puoli</option>
+              <option value="2">Koko</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div>
+            <div class="label">Aloitus</div>
+            <input id="manStart" class="input" type="time" />
+          </div>
+          <div>
+            <div class="label">Lopetus</div>
+            <input id="manEnd" class="input" type="time" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="label">Tauko (min)</div>
+        <input id="manBreak" class="input" type="number" min="0" step="1" />
+
+        <div class="divider"></div>
+        <div class="row">
+          <button class="btn btn-ghost" id="manCancel">Peruuta</button>
+          <button class="btn btn-green" id="manNext">Jatka</button>
+        </div>
+        <button class="modal-x" id="manClose" aria-label="Sulje">✕</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY MODAL -->
+    <div class="modal" id="modalSummary" style="display:none">
+      <div class="modal-card">
+        <div class="h1">Päivän yhteenveto</div>
+        <div class="muted" id="sumSub"></div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="label">Käyttäjä</div>
+            <div class="h2" id="sumUser">–</div>
+          </div>
+          <div class="card">
+            <div class="label">Päiväraha</div>
+            <div class="h2" id="sumPerDiem">–</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div>
+            <div class="label">Aloituspäivä</div>
+            <div class="h2" id="sumStartDate">–</div>
+          </div>
+          <div>
+            <div class="label">Aloitusaika</div>
+            <div class="h2" id="sumStartTime">–</div>
+          </div>
+          <div>
+            <div class="label">Lopetusaika</div>
+            <div class="h2" id="sumEndTime">–</div>
+          </div>
+          <div>
+            <div class="label">Tauko yhteensä</div>
+            <div class="h2" id="sumBreakTotal">–</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div class="card"><div class="label">Päivä</div><div class="big" id="sumDay">0:00</div></div>
+          <div class="card"><div class="label">Ilta</div><div class="big" id="sumEve">0:00</div></div>
+          <div class="card"><div class="label">Yö</div><div class="big" id="sumNight">0:00</div></div>
+          <div class="card"><div class="label">Yhteensä</div><div class="big" id="sumTotal">0:00</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div class="card"><div class="label">Vähennys</div><div class="h2" id="sumDeduct">–</div></div>
+          <div class="card"><div class="label">Tauko</div><div class="h2" id="sumBreakTotal">–</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <button class="btn btn-ghost" id="sumCancel">Peruuta</button>
+          <button class="btn btn-green" id="sumApprove">Hyväksy</button>
+        </div>
+        <button class="modal-x" id="sumClose" aria-label="Sulje">✕</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" style="display:none"></div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
